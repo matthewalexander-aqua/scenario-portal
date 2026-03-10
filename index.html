@@ -7,36 +7,28 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
 <header class="header">
     <div class="header-inner">
         <img src="logo.png" class="logo">
         <div class="title">Aquamore Finance Scenario Portal</div>
     </div>
 </header>
-
 <div class="container">
     <form id="scenarioForm">
-        
         <div class="card">
             <h2>Borrowing Entity</h2>
             <label>ABN</label>
             <input type="text" id="abn" name="abn" placeholder="11-digit ABN" required>
             <label>Registered Entity Name</label>
-            <input type="text" id="entityName" name="entity" required>
+            <input type="text" id="entityName" name="entity" required readonly style="background-color: #f9f9f9;" placeholder="Populates automatically">
         </div>
-
         <div class="card">
             <h2>Security Property</h2>
-            <label>Property Address</label>
-            <input type="text" name="address" required>
+            <label>Property Address</label><input type="text" name="address" required>
             <div style="display:flex; gap:10px;">
                 <div style="flex:2"><label>Suburb</label><input type="text" name="suburb"></div>
-                <div style="flex:1">
-                    <label>Postcode</label>
-                    <input type="text" id="postcode" name="postcode" maxlength="4" required>
-                    <div id="postcodeStatus" style="font-size: 0.85em; margin-top: 5px; font-weight: bold;"></div>
-                </div>
+                <div style="flex:1"><label>Postcode</label><input type="text" id="postcode" name="postcode" maxlength="4" required>
+                <div id="postcodeStatus" style="font-size: 0.85em; margin-top: 5px; font-weight: bold;"></div></div>
             </div>
             <label>Asset Type</label>
             <select id="assetType" name="asset">
@@ -52,10 +44,8 @@
                 <option value="Medium">1HA - 5HA</option>
                 <option value="Large">&gt; 5HA</option>
             </select>
-
             <div id="propertyFeedback" style="padding: 10px; border-radius: 5px; margin-top: 15px; font-weight: bold; display: none;"></div>
         </div>
-
         <div class="card">
             <h2>Loan Figures & Structure</h2>
             <label>Interest Type</label>
@@ -64,16 +54,11 @@
                 <option value="Capitalised">Fully Capitalised Interest</option>
             </select>
             <label>Loan Term</label><select id="loanTerm" name="loanTerm"></select>
-            
-            <label>Loan Amount ($)</label>
-            <input type="number" id="loanAmount" name="loanAmount" required>
-            <label>Property Value ($)</label>
-            <input type="number" id="value" name="value" required>
+            <label>Loan Amount ($)</label><input type="number" id="loanAmount" name="loanAmount" required>
+            <label>Property Value ($)</label><input type="number" id="value" name="value" required>
             <div class="result-line">Calculated LVR: <span id="lvr">0%</span></div>
-
             <div id="loanFeedback" style="padding: 10px; border-radius: 5px; margin-top: 10px; font-weight: bold; display: none;"></div>
         </div>
-
         <div class="card">
             <h2>Broker Details</h2>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
@@ -84,12 +69,10 @@
             <label>Scenario Notes (Required)</label>
             <textarea name="notes" id="notes" required style="height: 100px;"></textarea>
         </div>
-
         <button type="button" id="submitButton" class="submit-btn" onclick="submitScenario()">Submit Scenario</button>
         <div id="status" style="margin-top:20px; font-weight:bold; text-align:center;"></div>
     </form>
 </div>
-
 <script src="portal.js"></script>
 </body>
 </html>
