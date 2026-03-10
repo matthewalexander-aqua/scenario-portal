@@ -1,5 +1,6 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHRugrSISOKZSDD0gmYsc9BlaRF4EpL00-bvEXfEXoTtArSVylCO9b63KIP9JzuNcErQ/exec";
 
+// Postcode Data
 const METRO_RANGES = [[800,820],[828,832],[1000,1920],[2000,2308],[2500,2534],[2555,2574],[2600,2617],[2745,2786],[2900,2920],[3000,3232],[3235,3235],[3240,3241],[3242,3320],[3321,3321],[3328,3340],[3427,3441],[3442,3749],[3750,3815],[3816,3909],[3910,3920],[3926,3944],[3945,3971],[3972,3978],[3979,3979],[3980,3983],[3984,3999],[4000,4269],[4270,4313],[4340,4342],[4346,4346],[4350,4350],[4500,4575],[5000,5199],[5800,5999],[6000,6214],[6800,6999],[7000,7899],[8000,8899],[9000,9299],[9400,9596]];
 
 function getZone(pc) {
@@ -32,64 +33,75 @@ function runPolicyCheck() {
     const pcStatus = document.getElementById("postcodeStatus");
     const submitBtn = document.getElementById("submitButton");
 
-    let lvr = 0;
-    if (val > 0) {
-        lvr = (loan / val) * 100;
-        lvrSpan.innerText = lvr.toFixed(2) + "%";
+    // Live Postcode/Zone Tagging
+    const zone = getZone(pc);
+    if (pc) {
+        pcStatus.innerText = `Security Location: ${zone}`;
+        pcStatus.style.color = (zone === "Metro") ? "#0f8f66" : "#d9534f";
     }
 
-    if (!pc) { pcStatus.innerText = ""; return; }
-    const zone = getZone(pc);
-    pcStatus.innerText = `Location: ${zone}`;
-    pcStatus.style.color = zone === "Metro" ? "#0f8f66" : "#2c3e50";
+    let lvr = val > 0 ? (loan / val) * 100 : 0;
+    lvrSpan.innerText = lvr.toFixed(2) + "%";
 
     let error = "";
-    feedback.style.display = (loan > 0 && val > 0) ? "block" : "none";
+    feedback.style.display = "block";
 
-    // 1. Capitalised Interest Overlay
-    if (interestType === "Capitalised" && lvr > 70) {
-        error = "Policy Alert: Max LVR is 70.00% for Fully Capitalised scenarios.";
+    // --- PROPERTY ELIGIBILITY (HARD STOP) ---
+    if (pc && zone === "Invalid") {
+        error = "INVALID POSTCODE: Please enter a valid 4-digit Australian postcode.";
     } 
-    // 2. Land Size Check
     else if (land === "Large") {
-        error = "Ineligible: Land size > 5HA requires financier consent.";
+        error = "INELIGIBLE PROPERTY: Land size > 5HA is ineligible without financier consent.";
     } 
-    // 3. Asset Logic
-    else if (asset === "Residential" || asset === "Townhouse") {
-        let maxLVR = (loan > 5000000) ? 70 : 75;
-        if (land === "Medium") {
-            maxLVR = (zone === "Metro") ? 60 : 55;
-            if (loan > 3000000) error = "Loan capped at $3M for 1HA-5HA land.";
-        }
-        if (!error && lvr > maxLVR) error = `Policy Alert: Max LVR is ${maxLVR}% for this asset.`;
-    } else if (asset === "Unit") {
-        if (loan > 3000000) error = "Loan capped at $3M for Units.";
-        if (!error && lvr > 75) error = "Policy Alert: Max LVR is 75% for Units.";
-    } else if (asset === "Commercial") {
-        let maxLVR = (zone === "Metro") ? (loan <= 3000000 ? 70 : 65) : (loan <= 3000000 ? 62.5 : 57.5);
-        if (land === "Medium") {
-            maxLVR = (zone === "Metro") ? 60 : 55;
-            if (loan > 3000000) error = "Loan capped at $3M for 1HA-5HA land.";
-        }
-        if (!error && lvr > maxLVR) error = `Policy Alert: Max LVR is ${maxLVR}% for Commercial (${zone}).`;
-    } else if (asset === "Vacant Land") {
-        if (zone === "Non-Metro") {
-            error = "Ineligible: Non-Metro Vacant Land is ineligible per Credit committee decision.";
-        } else {
-            let maxLVR = 60;
-            if (loan > 3000000) error = "Loan capped at $3M for Vacant Land.";
-            if (!error && lvr > maxLVR) error = `Policy Alert: Max LVR is ${maxLVR}% for Metro Vacant Land.`;
+    else if (asset === "Vacant Land" && zone === "Non-Metro") {
+        error = "INELIGIBLE PROPERTY: Non-Metro Vacant Land is ineligible (Credit Committee Decision).";
+    }
+
+    // --- LOAN ELIGIBILITY (SOFT STOP) ---
+    if (!error && loan > 0 && val > 0) {
+        if (interestType === "Capitalised" && lvr > 70) {
+            error = "POLICY ALERT: Max LVR is 70.00% for Fully Capitalised interest scenarios.";
+        } 
+        else if (asset === "Residential" || asset === "Townhouse") {
+            let maxLVR = (loan > 5000000) ? 70 : 75;
+            if (land === "Medium") {
+                maxLVR = (zone === "Metro") ? 60 : 55;
+                if (loan > 3000000) error = "POLICY ALERT: Loan capped at $3M for 1HA-5HA land.";
+            }
+            if (!error && lvr > maxLVR) error = `POLICY ALERT: Max LVR is ${maxLVR}% for this asset.`;
+        } 
+        else if (asset === "Unit") {
+            if (loan > 3000000) error = "POLICY ALERT: Loan capped at $3M for Units.";
+            if (!error && lvr > 75) error = "POLICY ALERT: Max LVR is 75% for Units.";
+        } 
+        else if (asset === "Commercial") {
+            let maxLVR = (zone === "Metro") ? (loan <= 3000000 ? 70 : 65) : (loan <= 3000000 ? 62.5 : 57.5);
+            if (land === "Medium") {
+                maxLVR = (zone === "Metro") ? 60 : 55;
+                if (loan > 3000000) error = "POLICY ALERT: Loan capped at $3M for 1HA-5HA land.";
+            }
+            if (!error && lvr > maxLVR) error = `POLICY ALERT: Max LVR is ${maxLVR}% for Commercial (${zone}).`;
+        } 
+        else if (asset === "Vacant Land") {
+            if (loan > 3000000) error = "POLICY ALERT: Loan capped at $3M for Vacant Land.";
+            if (!error && lvr > 60) error = "POLICY ALERT: Max LVR is 60% for Metro Vacant Land.";
         }
     }
 
+    // UI Feedback
     if (error) {
         feedback.innerHTML = `⚠️ ${error}`;
         feedback.style.background = "#f8d7da"; feedback.style.color = "#721c24";
+        submitBtn.disabled = true;
         submitBtn.style.opacity = "0.5";
-    } else {
+    } else if (pc || (loan > 0 && val > 0)) {
         feedback.innerHTML = "✅ Scenario appears within standard policy guidelines.";
         feedback.style.background = "#d4edda"; feedback.style.color = "#155724";
+        submitBtn.disabled = false;
         submitBtn.style.opacity = "1";
+    } else {
+        feedback.style.display = "none";
+        submitBtn.disabled = false;
     }
 }
 
@@ -104,14 +116,13 @@ populateTerms();
 
 function submitScenario() {
     const form = document.getElementById("scenarioForm");
-    const status = document.getElementById("status");
     if (!form.checkValidity()) { alert("Please complete all required fields."); return; }
-
-    status.innerText = "Submitting...";
+    document.getElementById("status").innerText = "Submitting to Aquamore...";
     fetch(SCRIPT_URL, { method: "POST", body: new FormData(form) })
     .then(() => {
-        status.innerHTML = "✅ SUCCESS: Scenario submitted.";
+        document.getElementById("status").innerHTML = "✅ SUCCESS: Scenario submitted.";
         form.reset();
         populateTerms();
-    }).catch(() => { status.innerText = "❌ ERROR: Submission failed."; });
+        document.getElementById("policyFeedback").style.display = "none";
+    }).catch(() => { document.getElementById("status").innerText = "❌ ERROR: Submission failed."; });
 }
