@@ -1,7 +1,7 @@
 //
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw5D3jJqsCvZVs9BKoo0Wr8z_hnziJKNPsCv9XOL-LCL7a2PNiJqtDvrsQlEqQdgA1eyw/exec";
 
-// Postcode Data based on Matt's List
+//
 const METRO_RANGES = [[800,820],[828,832],[1000,1920],[2000,2308],[2500,2534],[2555,2574],[2600,2617],[2745,2786],[2900,2920],[3000,3232],[3235,3235],[3240,3241],[3242,3320],[3321,3321],[3328,3340],[3427,3441],[3442,3749],[3750,3815],[3816,3909],[3910,3920],[3926,3944],[3945,3971],[3972,3978],[3979,3979],[3980,3983],[3984,3999],[4000,4269],[4270,4313],[4340,4342],[4346,4346],[4350,4350],[4500,4575],[5000,5199],[5800,5999],[6000,6214],[6800,6999],[7000,7899],[8000,8899],[9000,9299],[9400,9596]];
 
 function getZone(pc) {
@@ -10,7 +10,7 @@ function getZone(pc) {
     return METRO_RANGES.some(r => p >= r[0] && p <= r[1]) ? "Metro" : "Non-Metro";
 }
 
-// Terms in 3-month blocks
+//
 function populateTerms() {
     const type = document.getElementById("interestType").value;
     const max = (type === "Capitalised") ? 18 : 36;
@@ -31,7 +31,9 @@ function runPolicyCheck() {
     const land = document.getElementById("landSize").value;
     const interestType = document.getElementById("interestType").value;
     
-    const feedback = document.getElementById("policyFeedback");
+    // UI Selectors
+    const propFeedback = document.getElementById("propertyFeedback");
+    const loanFeedback = document.getElementById("loanFeedback");
     const lvrSpan = document.getElementById("lvr");
     const pcStatus = document.getElementById("postcodeStatus");
     const submitBtn = document.getElementById("submitButton");
@@ -45,68 +47,89 @@ function runPolicyCheck() {
         pcStatus.style.color = (zone === "Metro") ? "#0f8f66" : "#d9534f";
     }
 
-    let error = "";
-    feedback.style.display = "block";
+    let propError = "";
+    let loanError = "";
 
-    // --- TIER 1: PROPERTY ELIGIBILITY (Hard Stop)
+    // --- 1. SECURITY PROPERTY VALIDATION ---
     if (asset === "Vacant Land" && zone === "Non-Metro") {
-        error = "INELIGIBLE PROPERTY: Non-Metro Vacant Land is not eligible.";
+        propError = "INELIGIBLE PROPERTY: Non-Metro Vacant Land is not eligible.";
     } 
     else if (land === "Large") {
-        error = "INELIGIBLE PROPERTY: Land size > 5HA is not eligible.";
+        propError = "INELIGIBLE PROPERTY: Land size > 5HA is not eligible.";
     }
     else if (pc.length === 4 && zone === "Invalid") {
-        error = "INVALID POSTCODE: Please enter a valid Australian postcode.";
+        propError = "INVALID POSTCODE: Please enter a valid 4-digit postcode.";
     }
 
-    // --- TIER 2: LOAN POLICY
-    if (!error && loan > 0 && val > 0) {
-        // Fully Capitalised Interest Overlay
+    // --- 2. LOAN POLICY VALIDATION (Only if property is okay) ---
+    if (!propError && loan > 0 && val > 0) {
         if (interestType === "Capitalised" && lvr > 70) {
-            error = "POLICY ALERT: Max LVR is 70.00% for Fully Capitalised scenarios.";
+            loanError = "POLICY ALERT: Max LVR is 70.00% for Fully Capitalised scenarios.";
         } 
         else if (asset === "Residential" || asset === "Townhouse") {
             let maxLVR = (loan > 5000000) ? 70 : 75;
             if (land === "Medium") {
                 maxLVR = (zone === "Metro") ? 60 : 55;
-                if (loan > 3000000) error = "POLICY ALERT: Loan capped at $3M for land between 1HA-5HA.";
+                if (loan > 3000000) loanError = "POLICY ALERT: Loan capped at $3M for 1HA-5HA land.";
             }
-            if (!error && lvr > maxLVR) error = `POLICY ALERT: Max LVR is ${maxLVR}% for this asset.`;
+            if (!loanError && lvr > maxLVR) loanError = `POLICY ALERT: Max LVR is ${maxLVR}% for this asset.`;
         } 
         else if (asset === "Unit") {
-            if (loan > 3000000 || lvr > 75) error = "POLICY ALERT: Max $3M loan / 75% LVR for Units.";
+            if (loan > 3000000 || lvr > 75) loanError = "POLICY ALERT: Max $3M loan / 75% LVR for Units.";
         } 
         else if (asset === "Commercial") {
             let maxLVR = (zone === "Metro") ? (loan <= 3000000 ? 70 : 65) : (loan <= 3000000 ? 62.5 : 57.5);
             if (land === "Medium") {
                 maxLVR = (zone === "Metro") ? 60 : 55;
-                if (loan > 3000000) error = "POLICY ALERT: Loan capped at $3M for land between 1HA-5HA.";
+                if (loan > 3000000) loanError = "POLICY ALERT: Loan capped at $3M for 1HA-5HA land.";
             }
-            if (!error && lvr > maxLVR) error = `POLICY ALERT: Max LVR is ${maxLVR}% for Commercial (${zone}).`;
+            if (!loanError && lvr > maxLVR) loanError = `POLICY ALERT: Max LVR is ${maxLVR}% for Commercial (${zone}).`;
         } 
         else if (asset === "Vacant Land") {
-            if (loan > 3000000 || lvr > 60) error = "POLICY ALERT: Max $3M / 60% LVR for Metro Vacant Land.";
+            if (loan > 3000000 || lvr > 60) loanError = "POLICY ALERT: Max $3M / 60% LVR for Metro Vacant Land.";
         }
     }
 
-    if (error) {
-        feedback.innerHTML = `⚠️ ${error}`;
-        feedback.style.background = "#f8d7da"; feedback.style.color = "#721c24";
+    // --- UI UPDATES ---
+    // Handle Property Box
+    if (propError) {
+        propFeedback.innerHTML = `⚠️ ${propError}`;
+        propFeedback.style.display = "block";
+        propFeedback.style.background = "#f8d7da"; propFeedback.style.color = "#721c24";
+    } else if (pc.length === 4) {
+        propFeedback.innerHTML = "✅ Property eligible per location policy.";
+        propFeedback.style.display = "block";
+        propFeedback.style.background = "#d4edda"; propFeedback.style.color = "#155724";
+    } else {
+        propFeedback.style.display = "none";
+    }
+
+    // Handle Loan Box
+    if (loanError) {
+        loanFeedback.innerHTML = `⚠️ ${loanError}`;
+        loanFeedback.style.display = "block";
+        loanFeedback.style.background = "#f8d7da"; loanFeedback.style.color = "#721c24";
+    } else if (loan > 0 && val > 0) {
+        loanFeedback.innerHTML = "✅ Loan figures meet standard LVR policy.";
+        loanFeedback.style.display = "block";
+        loanFeedback.style.background = "#d4edda"; loanFeedback.style.color = "#155724";
+    } else {
+        loanFeedback.style.display = "none";
+    }
+
+    // Button Lock
+    if (propError || loanError) {
         submitBtn.disabled = true;
         submitBtn.style.opacity = "0.4";
         submitBtn.style.cursor = "not-allowed";
-    } else if (pc.length === 4 || (loan > 0 && val > 0)) {
-        feedback.innerHTML = "✅ Scenario appears within standard policy guidelines.";
-        feedback.style.background = "#d4edda"; feedback.style.color = "#155724";
+    } else {
         submitBtn.disabled = false;
         submitBtn.style.opacity = "1";
         submitBtn.style.cursor = "pointer";
-    } else {
-        feedback.style.display = "none";
     }
 }
 
-// Events
+//
 ["loanAmount","value","assetType","postcode","landSize","interestType"].forEach(id => {
     document.getElementById(id).addEventListener("input", () => {
         if (id === "interestType") populateTerms();
@@ -125,6 +148,8 @@ function submitScenario() {
         document.getElementById("status").innerHTML = "✅ SUCCESS: Scenario submitted.";
         form.reset();
         populateTerms();
-        document.getElementById("policyFeedback").style.display = "none";
+        document.getElementById("propertyFeedback").style.display = "none";
+        document.getElementById("loanFeedback").style.display = "none";
+        document.getElementById("lvr").innerText = "0%";
     }).catch(() => { document.getElementById("status").innerText = "❌ ERROR: Submission failed."; });
 }
