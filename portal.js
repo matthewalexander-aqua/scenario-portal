@@ -73,15 +73,19 @@ function runPolicyCheck() {
         }
         if (!error && lvr > maxLVR) error = `Policy Alert: Max LVR is ${maxLVR}% for Commercial (${zone}).`;
     } else if (asset === "Vacant Land") {
-        let maxLVR = (zone === "Metro") ? 60 : 55;
-        if (loan > 3000000) error = "Loan capped at $3M for Vacant Land.";
-        if (!error && lvr > maxLVR) error = `Policy Alert: Max LVR is ${maxLVR}% for Vacant Land (${zone}).`;
+        if (zone === "Non-Metro") {
+            error = "Ineligible: Non-Metro Vacant Land is ineligible per Credit committee decision.";
+        } else {
+            let maxLVR = 60;
+            if (loan > 3000000) error = "Loan capped at $3M for Vacant Land.";
+            if (!error && lvr > maxLVR) error = `Policy Alert: Max LVR is ${maxLVR}% for Metro Vacant Land.`;
+        }
     }
 
     if (error) {
         feedback.innerHTML = `⚠️ ${error}`;
         feedback.style.background = "#f8d7da"; feedback.style.color = "#721c24";
-        submitBtn.style.opacity = "0.5"; // Visual cue to stop
+        submitBtn.style.opacity = "0.5";
     } else {
         feedback.innerHTML = "✅ Scenario appears within standard policy guidelines.";
         feedback.style.background = "#d4edda"; feedback.style.color = "#155724";
