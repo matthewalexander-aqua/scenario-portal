@@ -1,6 +1,7 @@
+//
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw5D3jJqsCvZVs9BKoo0Wr8z_hnziJKNPsCv9XOL-LCL7a2PNiJqtDvrsQlEqQdgA1eyw/exec";
 
-// Postcode Data
+// Postcode Data based on Matt's List
 const METRO_RANGES = [[800,820],[828,832],[1000,1920],[2000,2308],[2500,2534],[2555,2574],[2600,2617],[2745,2786],[2900,2920],[3000,3232],[3235,3235],[3240,3241],[3242,3320],[3321,3321],[3328,3340],[3427,3441],[3442,3749],[3750,3815],[3816,3909],[3910,3920],[3926,3944],[3945,3971],[3972,3978],[3979,3979],[3980,3983],[3984,3999],[4000,4269],[4270,4313],[4340,4342],[4346,4346],[4350,4350],[4500,4575],[5000,5199],[5800,5999],[6000,6214],[6800,6999],[7000,7899],[8000,8899],[9000,9299],[9400,9596]];
 
 function getZone(pc) {
@@ -9,6 +10,7 @@ function getZone(pc) {
     return METRO_RANGES.some(r => p >= r[0] && p <= r[1]) ? "Metro" : "Non-Metro";
 }
 
+// Terms in 3-month blocks
 function populateTerms() {
     const type = document.getElementById("interestType").value;
     const max = (type === "Capitalised") ? 18 : 36;
@@ -46,7 +48,7 @@ function runPolicyCheck() {
     let error = "";
     feedback.style.display = "block";
 
-    // TIER 1: PROPERTY ELIGIBILITY (Hard Stop - No Committee Mention)
+    // --- TIER 1: PROPERTY ELIGIBILITY (Hard Stop)
     if (asset === "Vacant Land" && zone === "Non-Metro") {
         error = "INELIGIBLE PROPERTY: Non-Metro Vacant Land is not eligible.";
     } 
@@ -57,8 +59,9 @@ function runPolicyCheck() {
         error = "INVALID POSTCODE: Please enter a valid Australian postcode.";
     }
 
-    // TIER 2: LOAN POLICY (Triggers if numbers present)
+    // --- TIER 2: LOAN POLICY
     if (!error && loan > 0 && val > 0) {
+        // Fully Capitalised Interest Overlay
         if (interestType === "Capitalised" && lvr > 70) {
             error = "POLICY ALERT: Max LVR is 70.00% for Fully Capitalised scenarios.";
         } 
@@ -103,6 +106,7 @@ function runPolicyCheck() {
     }
 }
 
+// Events
 ["loanAmount","value","assetType","postcode","landSize","interestType"].forEach(id => {
     document.getElementById(id).addEventListener("input", () => {
         if (id === "interestType") populateTerms();
