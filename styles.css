@@ -1,0 +1,14 @@
+
+body{font-family:Arial;background:#f4f6f7;margin:0}
+.header{background:#000000;padding:30px;color:white}
+.header-inner{display:flex;align-items:center;gap:20px}
+.logo{height:50px}
+.title{font-size:35px;font-weight:bold}
+.container{max-width:900px;margin:auto;padding:30px}
+.card{background:white;padding:25px;border-radius:8px;margin-bottom:25px;box-shadow:0 2px 6px rgba(0,0,0,0.1)}
+.card h2{color:#0f8f66;margin-top:0}
+label{display:block;margin-top:12px;font-weight:bold}
+input,select,textarea{width:100%;padding:10px;margin-top:5px;border:1px solid #ccc;border-radius:5px}
+.submit-btn{background:#0f8f66;color:white;border:none;padding:15px 25px;font-size:16px;border-radius:6px;cursor:pointer;margin-top:20px}
+.submit-btn:hover{background:#0c6d50}
+.result-line{margin-top:10px;font-weight:bold}
