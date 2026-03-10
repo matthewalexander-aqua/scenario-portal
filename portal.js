@@ -53,10 +53,10 @@ function runPolicyCheck() {
 
     // HARD STOPS: SECURITY PROPERTY
     if (asset === "Vacant Land" && zone === "Non-Metro") {
-        error = "INELIGIBLE PROPERTY: Non-Metro Vacant Land is strictly ineligible per Credit committee decision.";
+        error = "INELIGIBLE PROPERTY: Non-Metro Vacant Land is ineligible.";
     } 
     else if (land === "Large") {
-        error = "INELIGIBLE PROPERTY: Land size > 5HA is ineligible without financier consent.";
+        error = "INELIGIBLE PROPERTY: Land size > 5HA is ineligible.";
     }
     else if (pc.length === 4 && zone === "Invalid") {
         error = "INVALID POSTCODE: Please check the postcode entered.";
