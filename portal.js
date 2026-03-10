@@ -21,45 +21,51 @@ function populateTerms() {
 }
 
 function runPolicyCheck() {
+    // 1. Capture all current inputs
     const loan = parseFloat(document.getElementById("loanAmount").value) || 0;
     const val = parseFloat(document.getElementById("value").value) || 0;
     const asset = document.getElementById("assetType").value;
     const pc = document.getElementById("postcode").value;
     const land = document.getElementById("landSize").value;
     const interestType = document.getElementById("interestType").value;
+    
+    // UI Elements
     const feedback = document.getElementById("policyFeedback");
     const lvrSpan = document.getElementById("lvr");
     const pcStatus = document.getElementById("postcodeStatus");
     const submitBtn = document.getElementById("submitButton");
 
-    // Live Postcode/Zone Tagging
-    const zone = getZone(pc);
-    if (pc) {
-        pcStatus.innerText = `Security Location: ${zone}`;
-        pcStatus.style.color = (zone === "Metro") ? "#0f8f66" : "#d9534f";
-    }
-
+    // 2. Always update LVR display and Zone status immediately
     let lvr = val > 0 ? (loan / val) * 100 : 0;
     lvrSpan.innerText = lvr.toFixed(2) + "%";
+    
+    const zone = getZone(pc);
+    if (pc.length >= 3) {
+        pcStatus.innerText = `Security Location: ${zone}`;
+        pcStatus.style.color = (zone === "Metro") ? "#0f8f66" : "#d9534f";
+    } else {
+        pcStatus.innerText = "";
+    }
 
+    // 3. START ELIGIBILITY CHECK (This runs even if Loan/Value are empty)
     let error = "";
-    feedback.style.display = "block";
+    feedback.style.display = "block"; // Always show the box if we have a postcode or asset
 
-    // --- PROPERTY ELIGIBILITY (HARD STOP) ---
-    if (pc && zone === "Invalid") {
-        error = "INVALID POSTCODE: Please enter a valid 4-digit Australian postcode.";
+    // HARD STOPS: SECURITY PROPERTY
+    if (asset === "Vacant Land" && zone === "Non-Metro") {
+        error = "INELIGIBLE PROPERTY: Non-Metro Vacant Land is strictly ineligible per Credit committee decision.";
     } 
     else if (land === "Large") {
         error = "INELIGIBLE PROPERTY: Land size > 5HA is ineligible without financier consent.";
-    } 
-    else if (asset === "Vacant Land" && zone === "Non-Metro") {
-        error = "INELIGIBLE PROPERTY: Non-Metro Vacant Land is ineligible (Credit Committee Decision).";
+    }
+    else if (pc.length === 4 && zone === "Invalid") {
+        error = "INVALID POSTCODE: Please check the postcode entered.";
     }
 
-    // --- LOAN ELIGIBILITY (SOFT STOP) ---
+    // 4. SECONDARY CHECK: LOAN POLICY (Only runs if numbers are present)
     if (!error && loan > 0 && val > 0) {
         if (interestType === "Capitalised" && lvr > 70) {
-            error = "POLICY ALERT: Max LVR is 70.00% for Fully Capitalised interest scenarios.";
+            error = "POLICY ALERT: Fully Capitalised scenarios are capped at 70.00% LVR.";
         } 
         else if (asset === "Residential" || asset === "Townhouse") {
             let maxLVR = (loan > 5000000) ? 70 : 75;
@@ -70,8 +76,7 @@ function runPolicyCheck() {
             if (!error && lvr > maxLVR) error = `POLICY ALERT: Max LVR is ${maxLVR}% for this asset.`;
         } 
         else if (asset === "Unit") {
-            if (loan > 3000000) error = "POLICY ALERT: Loan capped at $3M for Units.";
-            if (!error && lvr > 75) error = "POLICY ALERT: Max LVR is 75% for Units.";
+            if (loan > 3000000 || lvr > 75) error = "POLICY ALERT: Max $3M loan / 75% LVR for Units.";
         } 
         else if (asset === "Commercial") {
             let maxLVR = (zone === "Metro") ? (loan <= 3000000 ? 70 : 65) : (loan <= 3000000 ? 62.5 : 57.5);
@@ -82,25 +87,25 @@ function runPolicyCheck() {
             if (!error && lvr > maxLVR) error = `POLICY ALERT: Max LVR is ${maxLVR}% for Commercial (${zone}).`;
         } 
         else if (asset === "Vacant Land") {
-            if (loan > 3000000) error = "POLICY ALERT: Loan capped at $3M for Vacant Land.";
-            if (!error && lvr > 60) error = "POLICY ALERT: Max LVR is 60% for Metro Vacant Land.";
+            if (loan > 3000000 || lvr > 60) error = "POLICY ALERT: Max $3M / 60% LVR for Metro Vacant Land.";
         }
     }
 
-    // UI Feedback
+    // 5. UPDATE UI AND BUTTON STATE
     if (error) {
         feedback.innerHTML = `⚠️ ${error}`;
         feedback.style.background = "#f8d7da"; feedback.style.color = "#721c24";
         submitBtn.disabled = true;
-        submitBtn.style.opacity = "0.5";
-    } else if (pc || (loan > 0 && val > 0)) {
-        feedback.innerHTML = "✅ Scenario appears within standard policy guidelines.";
+        submitBtn.style.opacity = "0.4";
+        submitBtn.style.cursor = "not-allowed";
+    } else if (pc.length === 4 || (loan > 0 && val > 0)) {
+        feedback.innerHTML = "✅ Security and Loan appear to meet standard policy.";
         feedback.style.background = "#d4edda"; feedback.style.color = "#155724";
         submitBtn.disabled = false;
         submitBtn.style.opacity = "1";
+        submitBtn.style.cursor = "pointer";
     } else {
         feedback.style.display = "none";
-        submitBtn.disabled = false;
     }
 }
 
