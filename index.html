@@ -6,22 +6,59 @@
     <title>Aquamore Finance Scenario Portal</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; background: #fdfdfd; padding: 10px; border: 1px solid #eee; border-radius: 5px; }
+        /* Centered & Responsive Header Logic */
+        .header {
+            width: 100%;
+            background: #fff;
+            padding: 20px 0;
+            border-bottom: 2px solid #eee;
+            display: flex;
+            justify-content: center; /* Centers horizontally */
+            align-items: center;    /* Centers vertically */
+        }
+        .header-inner {
+            display: flex;
+            flex-direction: column; /* Stacks logo above text on mobile */
+            align-items: center;
+            text-align: center;
+            max-width: 1200px;
+            width: 90%;
+        }
+        .logo { max-height: 50px; margin-bottom: 10px; }
+        .title { 
+            font-size: 1.8rem; 
+            font-weight: bold; 
+            color: #1a1a1a;
+            margin: 0;
+        }
+
+        /* Checkbox & Layout Styling */
+        .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; background: #fdfdfd; padding: 12px; border: 1px solid #eee; border-radius: 5px; }
         .checkbox-item { display: flex; align-items: center; font-size: 0.9em; cursor: pointer; }
-        .checkbox-item input { margin-right: 8px; width: 18px; height: 18px; cursor: pointer; }
+        .checkbox-item input { margin-right: 8px; width: 18px; height: 18px; }
+
+        @media (min-width: 768px) {
+            .header-inner { flex-direction: row; justify-content: center; gap: 20px; }
+            .logo { margin-bottom: 0; }
+        }
     </style>
 </head>
 <body>
+
 <header class="header">
-    <div class="header-inner"><img src="logo.png" class="logo"><div class="title">Aquamore Finance Scenario Portal</div></div>
+    <div class="header-inner">
+        <img src="logo.png" class="logo" alt="Aquamore Logo">
+        <h1 class="title">Aquamore Finance Scenario Portal</h1>
+    </div>
 </header>
+
 <div class="container">
     <form id="scenarioForm">
         <div class="card">
             <h2>Borrowing Entity</h2>
             <label>ABN</label><input type="text" id="abn" name="abn" placeholder="11-digit ABN" required>
             <label>Registered Entity Name</label>
-            <input type="text" id="entityName" name="entity" required readonly style="background-color: #f9f9f9;" placeholder="Populates automatically">
+            <input type="text" id="entityName" name="entity" required readonly style="background-color: #f5f5f5;" placeholder="Auto-populates on tab">
         </div>
 
         <div class="card">
@@ -57,11 +94,12 @@
                 <option value="Capitalised">Fully Capitalised Interest</option>
             </select>
             
-            <label>Current Arrears/Debts (Check all that apply)</label>
+            <label>Current Arrears/Debts</label>
             <div class="checkbox-group">
                 <label class="checkbox-item"><input type="checkbox" name="arrears_mortgage"> Mortgage Arrears</label>
                 <label class="checkbox-item"><input type="checkbox" name="arrears_council"> Council/Utilities</label>
                 <label class="checkbox-item"><input type="checkbox" name="arrears_ato"> ATO Debt</label>
+                <label class="checkbox-item"><input type="checkbox" name="arrears_none"> No Arrears</label>
             </div>
 
             <label>Loan Term</label><select id="loanTerm" name="loanTerm"></select>
@@ -72,12 +110,25 @@
         </div>
 
         <div class="card">
-            <h2>Broker Details</h2>
+            <h2>Broker & RM Details</h2>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <div><label>Broker Name</label><input type="text" name="brokerName" required></div>
                 <div><label>Broker Mobile</label><input type="text" name="brokerPhone" required></div>
             </div>
-            <label>Broker Email</label><input type="email" name="brokerEmail" required>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div><label>Broker Email</label><input type="email" name="brokerEmail" required></div>
+                <div>
+                    <label>Broker State</label>
+                    <select name="brokerState" required>
+                        <option value="NSW">NSW</option><option value="VIC">VIC</option>
+                        <option value="QLD">QLD</option><option value="WA">WA</option>
+                        <option value="SA">SA</option><option value="TAS">TAS</option>
+                        <option value="ACT">ACT</option><option value="NT">NT</option>
+                    </select>
+                </div>
+            </div>
+            <label>Aquamore RM / BDM Name</label>
+            <input type="text" name="rmBdmName" required placeholder="Name of your Aquamore RM">
             <label>Scenario Notes (Required)</label>
             <textarea name="notes" id="notes" required style="height: 100px;"></textarea>
         </div>
