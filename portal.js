@@ -18,7 +18,7 @@ async function lookupABN() {
             const response = await fetch(`${SCRIPT_URL}?abn=${abn}`);
             const result = await response.json();
             if (result.name === "Entity Not Found" || result.name.includes("Error")) {
-                entityInput.value = ""; entityInput.placeholder = "Not found. Enter manually.";
+                entityInput.value = ""; entityInput.placeholder = "ABN not found. Enter manually.";
                 entityInput.readOnly = false;
             } else { entityInput.value = result.name; entityInput.readOnly = true; }
         } catch (e) { entityInput.value = ""; entityInput.readOnly = false; }
@@ -89,7 +89,10 @@ function runPolicyCheck() {
 }
 
 ["loanAmount","value","assetType","postcode","landSize","interestType"].forEach(id => {
-    document.getElementById(id).addEventListener("input", runPolicyCheck);
+    document.getElementById(id).addEventListener("input", () => {
+        if (id === "interestType") populateTerms();
+        runPolicyCheck();
+    });
 });
 document.getElementById("abn").addEventListener("blur", lookupABN);
 document.getElementById("abn").addEventListener("focus", () => { document.getElementById("entityName").value = ""; });
