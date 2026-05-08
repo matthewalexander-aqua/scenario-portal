@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aquamore Finance Scenario Portal</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ── Base ─────────────────────────────────────────────────── */
+        body {
+            font-family: Arial;
+            background: #000000;
+            margin: 0;
+            color: #f0f0f0;
+        }
+
+        /* ── Header — two-row centred ─────────────────────────────── */
+        .header {
+            background: #000000;
+            padding: 28px 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            border-bottom: 3px solid #025C3D;
+        }
+
+        .header-logo-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header-title-row {
+            display: flex;
+            justify-content: center;
+        }
+
+        .logo { height: 50px; display: block; }
+
+        .title {
+            font-size: 35px;
+            font-weight: bold;
+            color: #ffffff;
+            margin: 0;
+            text-align: center;
+        }
+
+        /* ── Container ────────────────────────────────────────────── */
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 30px;
+        }
+
+        /* ── Cards ────────────────────────────────────────────────── */
+        .card {
+            background: #1a1a1a;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        }
+
+        .card h2 {
+            color: #025C3D;
+            margin-top: 0;
+        }
+
+        /* ── Labels ───────────────────────────────────────────────── */
+        label {
+            display: block;
+            margin-top: 12px;
+            font-weight: bold;
+            color: #cccccc;
+        }
+
+        /* ── Inputs, selects, textareas ───────────────────────────── */
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background-color: #2a2a2a;
+            color: #f0f0f0;
+            font-family: Arial;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        input::placeholder { color: #666; }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #025C3D;
+            box-shadow: 0 0 0 2px rgba(2,92,61,0.3);
+        }
+
+        input[readonly] {
+            background-color: #111;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        /* ── Checkbox group ───────────────────────────────────────── */
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+            background: #222;
+            padding: 12px;
+            border: 1px solid #333;
+            border-radius: 5px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.9em;
+            cursor: pointer;
+            color: #f0f0f0;
+        }
+
+        /* checkboxes: restore natural size, don't inherit width:100% */
+        .checkbox-item input[type="checkbox"] {
+            width: 18px !important;
+            height: 18px;
+            margin-right: 8px;
+            accent-color: #025C3D;
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 3px;
+            padding: 0;
+            flex-shrink: 0;
+        }
+
+        /* ── Submit button ────────────────────────────────────────── */
+        .submit-btn {
+            background: #025C3D;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .submit-btn:hover { background: #014d33; }
+
+        /* ── LVR result line ──────────────────────────────────────── */
+        .result-line {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #f0f0f0;
+        }
+
+        /* ── Two-column grid helper ───────────────────────────────── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* ── Suburb / postcode row ────────────────────────────────── */
+        .suburb-postcode {
+            display: flex;
+            gap: 10px;
+            margin-top: 0;
+        }
+        .suburb-postcode .suburb-wrap { flex: 2; }
+        .suburb-postcode .postcode-wrap { flex: 1; }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-logo-row">
+        <img src="logo.png" class="logo" alt="Aquamore Logo"
+             onerror="this.style.display='none'">
+    </div>
+    <div class="header-title-row">
+        <h1 class="title">Aquamore Scenario Tool</h1>
+    </div>
+</header>
+
+<div class="container">
+    <form id="scenarioForm">
+
+        <div class="card">
+            <h2>Borrowing Entity</h2>
+            <label>ABN</label>
+            <input type="text" id="abn" name="abn" placeholder="11-digit ABN" required>
+            <label>Registered Entity Name</label>
+            <input type="text" id="entityName" name="entity" required readonly
+                   placeholder="Auto-populates on tab">
+        </div>
+
+        <div class="card">
+            <h2>Security Property</h2>
+            <label>Property Address</label>
+            <input type="text" name="address" required>
+
+            <div class="suburb-postcode">
+                <div class="suburb-wrap">
+                    <label>Suburb</label>
+                    <input type="text" name="suburb">
+                </div>
+                <div class="postcode-wrap">
+                    <label>Postcode</label>
+                    <input type="text" id="postcode" name="postcode" maxlength="4" required>
+                    <div id="postcodeStatus" style="font-size:0.85em;margin-top:5px;font-weight:bold;"></div>
+                </div>
+            </div>
+
+            <label>Asset Type</label>
+            <select id="assetType" name="asset">
+                <option value="Residential">Residential House</option>
+                <option value="Townhouse">Townhouse</option>
+                <option value="Unit">Unit / Apartment</option>
+                <option value="Commercial">Commercial</option>
+                <option value="Vacant Land">Vacant Land</option>
+            </select>
+
+            <label>Land Size</label>
+            <select id="landSize" name="landSize">
+                <option value="Small">&lt; 1HA</option>
+                <option value="Medium">1HA – 5HA</option>
+                <option value="Large">&gt; 5HA</option>
+            </select>
+
+            <div id="propertyFeedback"
+                 style="padding:10px;border-radius:5px;margin-top:15px;font-weight:bold;display:none;"></div>
+        </div>
+
+        <div class="card">
+            <h2>Loan Figures &amp; Structure</h2>
+
+            <label>Interest Type</label>
+            <select id="interestType" name="interestType">
+                <option value="Serviced">Serviced Interest</option>
+                <option value="Capitalised">Fully Capitalised Interest</option>
+            </select>
+
+            <label>Current Arrears / Debts</label>
+            <div class="checkbox-group">
+                <label class="checkbox-item">
+                    <input type="checkbox" name="arrears_mortgage"> Mortgage Arrears
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" name="arrears_council"> Council / Utilities
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" name="arrears_ato"> ATO Debt
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" name="arrears_none"> No Arrears
+                </label>
+            </div>
+
+            <label>Loan Term</label>
+            <select id="loanTerm" name="loanTerm"></select>
+
+            <label>Loan Amount ($)</label>
+            <input type="number" id="loanAmount" name="loanAmount" required>
+
+            <label>Property Value ($)</label>
+            <input type="number" id="value" name="value" required>
+
+            <div class="result-line">Calculated LVR: <span id="lvr">0%</span></div>
+            <div id="loanFeedback"
+                 style="padding:10px;border-radius:5px;margin-top:10px;font-weight:bold;display:none;"></div>
+        </div>
+
+        <div class="card">
+            <h2>Broker &amp; RM Details</h2>
+
+            <div class="two-col">
+                <div><label>Broker Name</label><input type="text" name="brokerName" required></div>
+                <div><label>Broker Mobile</label><input type="text" name="brokerPhone" required></div>
+            </div>
+
+            <div class="two-col">
+                <div><label>Broker Email</label><input type="email" name="brokerEmail" required></div>
+                <div>
+                    <label>Broker State</label>
+                    <select name="brokerState" required>
+                        <option value="NSW">NSW</option>
+                        <option value="VIC">VIC</option>
+                        <option value="QLD">QLD</option>
+                        <option value="WA">WA</option>
+                        <option value="SA">SA</option>
+                        <option value="TAS">TAS</option>
+                        <option value="ACT">ACT</option>
+                        <option value="NT">NT</option>
+                    </select>
+                </div>
+            </div>
+
+            <label>Aquamore RM / BDM Name</label>
+            <input type="text" name="rmBdmName" required placeholder="Name of your Aquamore RM">
+
+            <label>Scenario Notes (Required)</label>
+            <textarea name="notes" id="notes" required style="height:100px;"></textarea>
+        </div>
+
+        <button type="button" id="submitButton" class="submit-btn" onclick="submitScenario()">
+            Submit Scenario
+        </button>
+        <div id="status" style="margin-top:20px;font-weight:bold;text-align:center;"></div>
+
+    </form>
+</div>
+
+<script src="portal.js"></script>
+</body>
+</html>
