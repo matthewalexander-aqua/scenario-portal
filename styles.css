@@ -1,6 +1,6 @@
 
 body{font-family:Arial;background:#f4f6f7;margin:0}
-.header{background:#000000;padding:30px;color:white}
+.header{background:#000000;padding:30px;color:Black}
 .header-inner{display:flex;align-items:center;gap:20px}
 .logo{height:50px}
 .title{font-size:35px;font-weight:bold}
